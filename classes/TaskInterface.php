@@ -1,4 +1,6 @@
 <?php
+namespace TYPO3\CMS\Taskcenter;
+
 /***************************************************************
  *  Copyright notice
  *
@@ -13,6 +15,9 @@
  *
  *  The GNU General Public License can be found at
  *  http://www.gnu.org/copyleft/gpl.html.
+ *  A copy is found in the textfile GPL.txt and important notices to the license
+ *  from the author is found in LICENSE.txt distributed with these scripts.
+ *
  *
  *  This script is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,20 +26,29 @@
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
-$LANG->includeLLFile('EXT:taskcenter/task/locallang.xml');
-$BE_USER->modAccess($MCONF, 1);
-/*
- * @deprecated since 6.0, the classname SC_mod_user_task_index and this file is obsolete
- * and will be removed by 7.0. The class was renamed and is now located at:
- * typo3/sysext/taskcenter/Classes/Controller/TaskModuleController.php
+/**
+ * Interface for classes which provide a task.
+ *
+ * @author Georg Ringer <typo3@ringerge.org
+ * @package TYPO3
+ * @subpackage tx_taskcenter
  */
-require_once \TYPO3\CMS\Core\Extension\ExtensionManager::extPath('taskcenter') . 'Classes/Controller/TaskModuleController.php';
-// Make instance:
-$SOBE = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Taskcenter\\Controller\\TaskModuleController');
-// Include files?
-foreach ($SOBE->include_once as $INC_FILE) {
-	include_once $INC_FILE;
+interface TaskInterface
+{
+	/**
+	 * Returns the content for a task
+	 *
+	 * @return string A task rendered HTML
+	 */
+	public function getTask();
+
+	/**
+	 * Returns the overview of a task
+	 *
+	 * @return string A task rendered HTML
+	 */
+	public function getOverview();
+
 }
-$SOBE->main();
-$SOBE->printContent();
+
 ?>
