@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.0" xmlns:t3="http://typo3.org/schemas/xliff">
+	<file t3:id="1415814829" source-language="en" datatype="plaintext" original="messages" date="2011-10-17T20:22:33Z" product-name="taskcenter">
+		<header/>
+		<body>
+			<trans-unit id=".alttitle">
+				<source>Import/Export</source>
+			</trans-unit>
+			<trans-unit id=".description">
+				<source>Native Import/Export module for TYPO3 data. Can export single records, content of tables, single pages or whole branches of the page tree. Includes attached media like image and preserves relations between records. Exports only to TYPO3 specific format, either a binary format (.T3D) or XML. The format is meant for exchange between TYPO3 systems.</source>
+			</trans-unit>
+			<trans-unit id="task.title">
+				<source>Preset title</source>
+			</trans-unit>
+			<trans-unit id="task.icon">
+				<source>Icon</source>
+			</trans-unit>
+			<trans-unit id="task.public">
+				<source>Public</source>
+			</trans-unit>
+			<trans-unit id="task.owner">
+				<source>Owner</source>
+			</trans-unit>
+			<trans-unit id="task.page">
+				<source>Page</source>
+			</trans-unit>
+			<trans-unit id="task.path">
+				<source>Path</source>
+			</trans-unit>
+			<trans-unit id="task.meta">
+				<source>Meta data</source>
+			</trans-unit>
+			<trans-unit id="task.own">
+				<source>Own</source>
+			</trans-unit>
+			<trans-unit id="notes">
+				<source>Notes</source>
+			</trans-unit>
+			<trans-unit id="single-record">
+				<source>Single record</source>
+			</trans-unit>
+			<trans-unit id="no-presets">
+				<source>No presets found!</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>
