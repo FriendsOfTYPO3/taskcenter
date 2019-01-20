@@ -1,7 +1,7 @@
 {
-	"name": "typo3/cms-taskcenter",
-	"type": "typo3-cms-framework",
-	"description": "The Task Center is the framework for a host of other extensions, see below.",
+	"name": "friendsoftypo3/taskcenter",
+	"type": "typo3-cms-extension",
+	"description": "The Task Center is the framework for a host of other extensions.",
 	"homepage": "https://typo3.org",
 	"license": ["GPL-2.0-or-later"],
 	"authors": [{
@@ -13,13 +13,14 @@
 		"sort-packages": true
 	},
 	"require": {
-		"typo3/cms-core": "10.0.*@dev"
+		"typo3/cms-core": "10.*.*@dev"
 	},
 	"conflict": {
 		"typo3/cms": "*"
 	},
 	"replace": {
-		"taskcenter": "*"
+		"taskcenter": "*",
+		"typo3/cms-taskcenter": "*"
 	},
 	"extra": {
 		"branch-alias": {
