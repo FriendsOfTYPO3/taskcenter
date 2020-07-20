@@ -19,7 +19,7 @@
 		"typo3/cms": "*"
 	},
 	"replace": {
-		"taskcenter": "*",
+		"typo3-ter/taskcenter": "*",
 		"typo3/cms-taskcenter": "*"
 	},
 	"extra": {
