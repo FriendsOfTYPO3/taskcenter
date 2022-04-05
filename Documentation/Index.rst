@@ -1,62 +1,58 @@
-.. ==================================================
-.. FOR YOUR INFORMATION
-.. --------------------------------------------------
-.. -*- coding: utf-8 -*- with BOM.
+.. include:: /Includes.txt
 
-.. include:: Includes.txt
-
-
-.. _start:
-
-==========
-Taskcenter
-==========
+===========
+Task Center
+===========
 
 :Extension key:
-      taskcenter
+   taskcenter
+
+:Package name:
+   friendsoftypo3/taskcenter
 
 :Version:
-      |release|
+   |release|
 
 :Language:
-      en
-
-:Description:
-      A user's personal communication center in the Backend.
-
-:Keywords:
-      taskcenter
-
-:Copyright:
-      2000-2019
+   en
 
 :Author:
-      TYPO3 CMS Core Development Team
+   TYPO3 contributors
 
 :License:
-      Open Content License available from `www.opencontent.org/opl.shtml
-      <http://www.opencontent.org/opl.shtml>`_
+   This document is published under the
+   `Open Content License <https://www.openhub.net/licenses/opl>`__.
 
 :Rendered:
-      |today|
+   |today|
 
-The content of this document is related to TYPO3,
+----
 
-a GNU/GPL CMS/Framework available from `www.typo3.org
-<http://www.typo3.org/>`_
+The Task Center adds a module to the user's drop-down menu in the toolbar. It
+provides the framework into which other extensions hook, for example, the
+`sys_action <https://extensions.typo3.org/extension/sys_action/>`__ extension.
 
+The functionality was part of the TYPO3 Core until TYPO3 v10.0, and moved into
+its own extension, receiving its own public repository.
 
+----
 
-
-**Table of Contents**
+**Table of Contents:**
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 2
    :titlesonly:
-   :glob:
 
    Introduction/Index
+   Installation/Index
    Administration/Index
    DevelopersGuide/Index
-   Targets
+   Contribution/Index
 
+.. Meta Menu
+
+.. toctree::
+   :hidden:
+
+   Sitemap
+   genindex

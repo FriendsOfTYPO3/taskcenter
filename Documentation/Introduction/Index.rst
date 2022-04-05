@@ -38,3 +38,12 @@ implemented in this example.
 
    The BE module with various tasks
 
+
+.. _current-state:
+
+Current state
+^^^^^^^^^^^^^
+
+The extension has been part of TYPO3 Core for a very long time but never
+received much love. It may become more healthy if maintained as third party
+extension and has been extracted for this reason.
