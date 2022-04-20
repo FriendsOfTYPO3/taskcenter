@@ -1,7 +1,7 @@
 <?php
 $EM_CONF[$_EXTKEY] = [
     'title' => 'User>Task Center',
-    'description' => 'The Task Center is the framework for a host of other extensions.',
+    'description' => 'The Task Center provides the framework into which other extensions hook, for example, the sys_action extension.',
     'category' => 'module',
     'state' => 'stable',
     'createDirs' => '',
