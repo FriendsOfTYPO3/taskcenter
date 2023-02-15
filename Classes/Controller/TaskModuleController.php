@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace TYPO3\CMS\Taskcenter\Controller;
 
 /*
@@ -13,16 +16,20 @@ namespace TYPO3\CMS\Taskcenter\Controller;
  *
  * The TYPO3 project - inspiring people to share!
  */
-
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
+use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Localization\LanguageService;
+use TYPO3\CMS\Core\Messaging\AbstractMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
+use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Fluid\View\StandaloneView;
@@ -34,7 +41,6 @@ use TYPO3\CMS\Taskcenter\TaskInterface;
  */
 class TaskModuleController
 {
-
     /**
      * Loaded with the global array $MCONF which holds some module configuration from the conf.php file of backend modules.
      *
@@ -58,7 +64,7 @@ class TaskModuleController
      * @var array
      */
     protected $MOD_MENU = [
-        'function' => []
+        'function' => [],
     ];
 
     /**
@@ -132,15 +138,21 @@ class TaskModuleController
      */
     protected $moduleName = 'user_task';
 
+    protected ModuleTemplateFactory $moduleTemplateFactory;
+    protected UriBuilder $uriBuilder;
+    protected PageRenderer $pageRenderer;
+
     /**
      * Initializes the Module
      */
-    public function __construct()
+    public function __construct(ModuleTemplateFactory $moduleTemplateFactory, UriBuilder $uriBuilder, PageRenderer $pageRenderer)
     {
-        $this->moduleTemplate = GeneralUtility::makeInstance(ModuleTemplate::class);
+        $this->moduleTemplateFactory = $moduleTemplateFactory;
+        $this->uriBuilder = $uriBuilder;
+        $this->pageRenderer = $pageRenderer;
         $this->getLanguageService()->includeLLFile('EXT:taskcenter/Resources/Private/Language/locallang_task.xlf');
         $this->MCONF = [
-            'name' => $this->moduleName
+            'name' => $this->moduleName,
         ];
         // Name might be set from outside
         if (!$this->MCONF['name']) {
@@ -192,19 +204,17 @@ class TaskModuleController
     {
         $menu = $this->moduleTemplate->getDocHeaderComponent()->getMenuRegistry()->makeMenu();
         $menu->setIdentifier('WebFuncJumpMenu');
-        /** @var \TYPO3\CMS\Backend\Routing\UriBuilder $uriBuilder */
-        $uriBuilder = GeneralUtility::makeInstance(\TYPO3\CMS\Backend\Routing\UriBuilder::class);
         foreach ($this->MOD_MENU['mode'] as $controller => $title) {
             $item = $menu
                 ->makeMenuItem()
                 ->setHref(
-                    (string)$uriBuilder->buildUriFromRoute(
+                    (string)$this->uriBuilder->buildUriFromRoute(
                         $this->moduleName,
                         [
                             'id' => $this->id,
                             'SET' => [
-                                'mode' => $controller
-                            ]
+                                'mode' => $controller,
+                            ],
                         ]
                     )
                 )
@@ -226,6 +236,7 @@ class TaskModuleController
      */
     public function mainAction(ServerRequestInterface $request): ResponseInterface
     {
+        $this->moduleTemplate = $this->moduleTemplateFactory->create($request);
         $this->main();
         $this->moduleTemplate->setContent($this->content);
         return new HtmlResponse($this->moduleTemplate->renderContent());
@@ -239,10 +250,6 @@ class TaskModuleController
     {
         $this->getButtons();
         $this->generateMenu();
-        $this->moduleTemplate->addJavaScriptCode(
-            'TaskCenterInlineJavascript',
-            'if (top.fsMod) { top.fsMod.recentIds["web"] = 0; }'
-        );
 
         // Render content depending on the mode
         $mode = (string)$this->MOD_SETTINGS['mode'];
@@ -269,9 +276,9 @@ class TaskModuleController
         // Render the task
         $actionContent = '';
         $flashMessage = null;
-        list($extKey, $taskClass) = explode('.', $chosenTask, 2);
+        [$extKey, $taskClass] = explode('.', $chosenTask, 2);
         if (class_exists($taskClass)) {
-            $taskInstance = GeneralUtility::makeInstance($taskClass, $this);
+            $taskInstance = GeneralUtility::makeInstance($taskClass, $this, $this->pageRenderer);
             if ($taskInstance instanceof TaskInterface) {
                 // Check if the task is restricted to admins only
                 if ($this->checkAccess($extKey, $taskClass)) {
@@ -281,7 +288,7 @@ class TaskModuleController
                         FlashMessage::class,
                         $languageService->getLL('error-access'),
                         $languageService->getLL('error_header'),
-                        FlashMessage::ERROR
+                        AbstractMessage::ERROR
                     );
                 }
             } else {
@@ -290,7 +297,7 @@ class TaskModuleController
                     FlashMessage::class,
                     sprintf($languageService->getLL('error_no-instance'), $taskClass, TaskInterface::class),
                     $languageService->getLL('error_header'),
-                    FlashMessage::ERROR
+                    AbstractMessage::ERROR
                 );
             }
         } else {
@@ -298,14 +305,14 @@ class TaskModuleController
                 FlashMessage::class,
                 $languageService->sL('LLL:EXT:taskcenter/Resources/Private/Language/locallang_mod.xlf:mlang_labels_tabdescr'),
                 $languageService->sL('LLL:EXT:taskcenter/Resources/Private/Language/locallang_mod.xlf:mlang_tabs_tab'),
-                FlashMessage::INFO
+                AbstractMessage::INFO
             );
         }
 
         if ($flashMessage) {
-            /** @var \TYPO3\CMS\Core\Messaging\FlashMessageService $flashMessageService */
-            $flashMessageService = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Messaging\FlashMessageService::class);
-            /** @var \TYPO3\CMS\Core\Messaging\FlashMessageQueue $defaultFlashMessageQueue */
+            /** @var FlashMessageService $flashMessageService */
+            $flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
+            /** @var FlashMessageQueue $defaultFlashMessageQueue */
             $defaultFlashMessageQueue = $flashMessageService->getMessageQueueByIdentifier();
             $defaultFlashMessageQueue->enqueue($flashMessage);
         }
@@ -343,7 +350,7 @@ class TaskModuleController
             'EXT:taskcenter/Resources/Private/Templates/InformationContent.html'
         ));
         $view->assignMultiple($assigns);
-        $this->content .= $view->render();
+        $this->content = $view->render();
     }
 
     /**
@@ -386,7 +393,7 @@ class TaskModuleController
 
         // Change the sorting of items to the user's one
         if ($mainMenu) {
-            $userSorting = unserialize($this->getBackendUser()->uc['taskcenter']['sorting']);
+            $userSorting = unserialize($this->getBackendUser()->uc['taskcenter']['sorting'] ?? '');
             if (is_array($userSorting)) {
                 $newSorting = [];
                 foreach ($userSorting as $item) {
@@ -421,10 +428,10 @@ class TaskModuleController
                 } else {
                     $item['ariaExpanded'] = 'false';
                     $item['collapseIcon'] = 'actions-view-list-collapse';
-                    $item['collapsed'] = 'in';
+                    $item['collapsed'] = 'show';
                 }
                 // Active menu item
-                $panelState = (string)$this->MOD_SETTINGS['function'] == $item['uid'] ? 'panel-active' : 'panel-default';
+                $panelState = (string)$this->MOD_SETTINGS['function'] == $item['uid'] ? 'bg-dark' : 'bg-default';
                 $item['panelState'] = $panelState;
             }
         }
@@ -450,8 +457,6 @@ class TaskModuleController
         $content = '';
         $tasks = [];
         $defaultIcon = 'EXT:taskcenter/Resources/Public/Icons/module-taskcenter.svg';
-        /** @var \TYPO3\CMS\Backend\Routing\UriBuilder $uriBuilder */
-        $uriBuilder = GeneralUtility::makeInstance(\TYPO3\CMS\Backend\Routing\UriBuilder::class);
         // Render the tasks only if there are any available
         if (count($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['taskcenter'] ?? [])) {
             foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['taskcenter'] as $extKey => $extensionReports) {
@@ -459,12 +464,12 @@ class TaskModuleController
                     if (!$this->checkAccess($extKey, $taskClass)) {
                         continue;
                     }
-                    $link = (string)$uriBuilder->buildUriFromRoute('user_task') . '&SET[function]=' . $extKey . '.' . $taskClass;
+                    $link = (string)$this->uriBuilder->buildUriFromRoute('user_task') . '&SET[function]=' . $extKey . '.' . $taskClass;
                     $taskTitle = $languageService->sL($task['title']);
                     $taskDescriptionHtml = '';
 
                     if (class_exists($taskClass)) {
-                        $taskInstance = GeneralUtility::makeInstance($taskClass, $this);
+                        $taskInstance = GeneralUtility::makeInstance($taskClass, $this, $this->pageRenderer);
                         if ($taskInstance instanceof TaskInterface) {
                             $taskDescriptionHtml = $taskInstance->getOverview();
                         }
@@ -477,7 +482,7 @@ class TaskModuleController
                         'description' => $languageService->sL($task['description']),
                         'icon' => !empty($task['icon']) ? $task['icon'] : $defaultIcon,
                         'link' => $link,
-                        'uid' => $extKey . '.' . $taskClass
+                        'uid' => $extKey . '.' . $taskClass,
                     ];
                 }
             }
@@ -487,11 +492,11 @@ class TaskModuleController
                 FlashMessage::class,
                 $languageService->getLL('no-tasks'),
                 '',
-                FlashMessage::INFO
+                AbstractMessage::INFO
             );
-            /** @var \TYPO3\CMS\Core\Messaging\FlashMessageService $flashMessageService */
-            $flashMessageService = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Messaging\FlashMessageService::class);
-            /** @var \TYPO3\CMS\Core\Messaging\FlashMessageQueue $defaultFlashMessageQueue */
+            /** @var FlashMessageService $flashMessageService */
+            $flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
+            /** @var FlashMessageQueue $defaultFlashMessageQueue */
             $defaultFlashMessageQueue = $flashMessageService->getMessageQueueByIdentifier();
             $defaultFlashMessageQueue->enqueue($flashMessage);
         }

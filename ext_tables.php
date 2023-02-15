@@ -1,5 +1,6 @@
 <?php
-defined('TYPO3_MODE') or die();
+
+defined('TYPO3') or die();
 
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule(
     'user',
@@ -11,6 +12,6 @@ defined('TYPO3_MODE') or die();
         'access' => 'group,user',
         'name' => 'user_task',
         'icon' => 'EXT:taskcenter/Resources/Public/Icons/module-taskcenter.svg',
-        'labels' => 'LLL:EXT:taskcenter/Resources/Private/Language/locallang_mod.xlf'
+        'labels' => 'LLL:EXT:taskcenter/Resources/Private/Language/locallang_mod.xlf',
     ]
 );

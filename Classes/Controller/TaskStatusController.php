@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace TYPO3\CMS\Taskcenter\Controller;
 
 /*
@@ -13,9 +16,9 @@ namespace TYPO3\CMS\Taskcenter\Controller;
  *
  * The TYPO3 project - inspiring people to share!
  */
-
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Http\JsonResponse;
 
 /**
@@ -67,7 +70,7 @@ class TaskStatusController
     /**
      * Returns BackendUserAuthentication
      *
-     * @return \TYPO3\CMS\Core\Authentication\BackendUserAuthentication
+     * @return BackendUserAuthentication
      */
     protected function getBackendUserAuthentication()
     {

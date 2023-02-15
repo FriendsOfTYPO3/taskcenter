@@ -1,0 +1,11 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  TYPO3\CMS\Taskcenter\:
+    resource: '../Classes'
+
+  TYPO3\CMS\Taskcenter\Controller\TaskModuleController:
+    tags: ['backend.controller']
