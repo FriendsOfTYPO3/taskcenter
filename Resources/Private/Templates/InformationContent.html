@@ -1,3 +1,7 @@
+<html
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    data-namespace-typo3-fluid="true"
+>
 <f:render partial="Description" arguments="{title: '{f:translate(key: \'{LLPrefix}mlang_tabs_tab\')}', description: '{f:translate(key: \'{LLPrefixMod}mlang_labels_tabdescr\')}'}" />
 <f:format.raw>
     <f:translate key="{LLPrefixTask}taskcenter-about"/>
@@ -6,3 +10,5 @@
     <br /><br />
     <f:render partial="Description" arguments="{title: '{f:translate(key: \'{LLPrefixTask}taskcenter-adminheader\')}', description: '{f:translate(key: \'{LLPrefixTask}taskcenter-admin\')}'}" />
 </f:if>
+
+</html>

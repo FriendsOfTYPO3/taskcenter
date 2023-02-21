@@ -1,6 +1,11 @@
+<html
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    data-namespace-typo3-fluid="true"
+>
 <h1>{title -> f:format.nl2br()}</h1>
 <f:if condition="{description}">
     <p>
         {description -> f:format.nl2br()}
     </p>
 </f:if>
+</html>

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace TYPO3\CMS\Taskcenter\Task;
 
 /*
@@ -13,14 +16,20 @@ namespace TYPO3\CMS\Taskcenter\Task;
  *
  * The TYPO3 project - inspiring people to share!
  */
-
+use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Localization\LanguageService;
+use TYPO3\CMS\Core\Messaging\AbstractMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Resource\Exception;
+use TYPO3\CMS\Core\Resource\Folder;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Fluid\View\StandaloneView;
 use TYPO3\CMS\Taskcenter\Controller\TaskModuleController;
 use TYPO3\CMS\Taskcenter\TaskInterface;
 
@@ -32,27 +41,18 @@ class ImportExportTask implements TaskInterface
 {
     /**
      * Back-reference to the calling reports module
-     *
-     * @var TaskModuleController $taskObject
      */
-    protected $taskObject;
+    protected TaskModuleController $taskObject;
 
     /**
      * URL to task module
-     *
-     * @var string
      */
-    protected $moduleUrl;
+    protected string $moduleUrl;
 
-    /**
-     * Constructor
-     *
-     * @param TaskModuleController $taskObject
-     */
     public function __construct(TaskModuleController $taskObject)
     {
-        /** @var \TYPO3\CMS\Backend\Routing\UriBuilder $uriBuilder */
-        $uriBuilder = GeneralUtility::makeInstance(\TYPO3\CMS\Backend\Routing\UriBuilder::class);
+        /** @var UriBuilder $uriBuilder */
+        $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
         $this->moduleUrl = (string)$uriBuilder->buildUriFromRoute('user_task');
         $this->taskObject = $taskObject;
         $this->getLanguageService()->includeLLFile('EXT:taskcenter/Resources/Private/Language/locallang_csh.xlf');
@@ -84,24 +84,15 @@ class ImportExportTask implements TaskInterface
      *
      * @return string HTML content.
      */
-    public function main()
+    public function main(): string
     {
         $content = '';
         $id = (int)GeneralUtility::_GP('display');
-        /** @var \TYPO3\CMS\Backend\Routing\UriBuilder $uriBuilder */
-        $uriBuilder = GeneralUtility::makeInstance(\TYPO3\CMS\Backend\Routing\UriBuilder::class);
+        /** @var UriBuilder $uriBuilder */
+        $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
         // If a preset is found, it is rendered using an iframe
         if ($id > 0) {
-            $url = (string)$uriBuilder->buildUriFromRoute(
-                'xMOD_tximpexp',
-                [
-                    'tx_impexp[action]' => 'export',
-                    'preset[load]' => 1,
-                    'preset[select]' => $id,
-                    'returnUrl' => $this->moduleUrl
-                ]
-            );
-            \TYPO3\CMS\Core\Utility\HttpUtility::redirect($url);
+            return $this->renderLoadForm($id);
         } else {
             // Header
             $lang = $this->getLanguageService();
@@ -154,13 +145,14 @@ class ImportExportTask implements TaskInterface
                         }
                         $description[] = '<br />' . $metaInformation;
                     }
+                    $description[] = $this->renderLoadForm((int)$presetCfg['uid']);
                     // Collect all preset information
                     $lines[$key] = [
                         'uid' => 'impexp' . $key,
                         'icon' => $icon,
                         'title' => $title,
                         'descriptionHtml' => implode('<br />', $description),
-                        'link' => (string)$uriBuilder->buildUriFromRoute('user_task') . '&SET[function]=impexp.TYPO3\\CMS\\Impexp\\Task\\ImportExportTask&display=' . $presetCfg['uid']
+                        'link' => (string)$uriBuilder->buildUriFromRoute('user_task') . '&SET[function]=impexp.' . ImportExportTask::class . '&display=' . $presetCfg['uid'],
                     ];
                 }
                 // Render preset list
@@ -171,11 +163,11 @@ class ImportExportTask implements TaskInterface
                     FlashMessage::class,
                     $lang->getLL('no-presets'),
                     $lang->getLL('.alttitle'),
-                    FlashMessage::NOTICE
+                    AbstractMessage::NOTICE
                 );
-                /** @var \TYPO3\CMS\Core\Messaging\FlashMessageService $flashMessageService */
+                /** @var FlashMessageService $flashMessageService */
                 $flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
-                /** @var \TYPO3\CMS\Core\Messaging\FlashMessageQueue $defaultFlashMessageQueue */
+                /** @var FlashMessageQueue $defaultFlashMessageQueue */
                 $defaultFlashMessageQueue = $flashMessageService->getMessageQueueByIdentifier();
                 $defaultFlashMessageQueue->enqueue($flashMessage);
             }
@@ -183,12 +175,30 @@ class ImportExportTask implements TaskInterface
         return $content;
     }
 
+    protected function renderLoadForm(int $id): string
+    {
+        $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
+        $view = GeneralUtility::makeInstance(StandaloneView::class);
+        $view->setTemplatePathAndFilename('EXT:taskcenter/Resources/Private/Templates/Task/ImportExport/Form.html');
+        $view->assign('display', $id);
+        $view->assign('returnUrl', $this->moduleUrl);
+        $url = (string)$uriBuilder->buildUriFromRoute(
+            'tx_impexp_export',
+            [
+                'tx_impexp[action]' => 'export',
+                'returnUrl' => $this->moduleUrl,
+            ]
+        );
+        $view->assign('url', $url);
+        return $view->render();
+    }
+
     /**
      * Select presets for this user
      *
-     * @return array|bool Array of preset records
+     * @return array Array of preset records
      */
-    protected function getPresets()
+    protected function getPresets(): array
     {
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getQueryBuilderForTable('tx_impexp_presets');
@@ -210,17 +220,14 @@ class ImportExportTask implements TaskInterface
             ->orderBy('item_uid', 'DESC')
             ->addOrderBy('title')
             ->execute()
-            ->fetchAll();
+            ->fetchAllAssociative();
     }
 
     /**
      * Returns a \TYPO3\CMS\Core\Resource\Folder object for saving export files
      * to the server and is also used for uploading import files.
-     *
-     * @throws \InvalidArgumentException
-     * @return \TYPO3\CMS\Core\Resource\Folder|null
      */
-    protected function getDefaultImportExportFolder()
+    protected function getDefaultImportExportFolder(): ?Folder
     {
         $defaultImportExportFolder = null;
 
@@ -241,18 +248,12 @@ class ImportExportTask implements TaskInterface
         return $defaultImportExportFolder;
     }
 
-    /**
-     * @return \TYPO3\CMS\Core\Authentication\BackendUserAuthentication
-     */
-    protected function getBackendUser()
+    protected function getBackendUser(): BackendUserAuthentication
     {
         return $GLOBALS['BE_USER'];
     }
 
-    /**
-     * @return mixed
-     */
-    protected function getLanguageService()
+    protected function getLanguageService(): LanguageService
     {
         return $GLOBALS['LANG'];
     }
