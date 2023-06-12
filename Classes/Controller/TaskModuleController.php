@@ -185,7 +185,7 @@ class TaskModuleController
         // Page / user TSconfig settings and blinding of menu-items
         // Now overwrite the stuff again for unknown reasons
         $this->modTSconfig['properties'] = BackendUtility::getPagesTSconfig($this->id)['mod.'][$this->MCONF['name'] . '.'] ?? [];
-        $this->MOD_MENU['function'] = $this->mergeExternalItems($this->MCONF['name'], 'function', $this->MOD_MENU['function']);
+        $this->MOD_MENU['function'] = $this->mergeExternalItems($this->MCONF['name'], 'function', $this->MOD_MENU['function'] ?? null);
         $blindActions = $this->modTSconfig['properties']['menu.']['function.'] ?? [];
         foreach ($blindActions as $key => $value) {
             if (!$value && array_key_exists($key, $this->MOD_MENU['function'])) {
@@ -599,7 +599,7 @@ class TaskModuleController
      */
     protected function mergeExternalItems($modName, $menuKey, $menuArr)
     {
-        $mergeArray = $GLOBALS['TBE_MODULES_EXT'][$modName]['MOD_MENU'][$menuKey];
+        $mergeArray = $GLOBALS['TBE_MODULES_EXT'][$modName]['MOD_MENU'][$menuKey] ?? false;
         if (is_array($mergeArray)) {
             foreach ($mergeArray as $k => $v) {
                 if (((string)$v['ws'] === '' || $this->getBackendUser()->workspace === 0 && GeneralUtility::inList($v['ws'], 'online')) || $this->getBackendUser()->workspace === -1 && GeneralUtility::inList($v['ws'], 'offline') || $this->getBackendUser()->workspace > 0 && GeneralUtility::inList($v['ws'], 'custom')) {
