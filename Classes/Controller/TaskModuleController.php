@@ -536,7 +536,7 @@ class TaskModuleController
             return true;
         }
         // Check if task is restricted to admins
-        if ((int)$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['taskcenter'][$extKey][$taskClass]['admin'] === 1) {
+        if (isset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['taskcenter'][$extKey][$taskClass]['admin']) && (int)$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['taskcenter'][$extKey][$taskClass]['admin'] === 1) {
             return false;
         }
         // Check if task is blinded with TsConfig (taskcenter.<extkey>.<taskName>
