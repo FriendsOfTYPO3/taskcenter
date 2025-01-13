@@ -47,27 +47,6 @@ class TaskStatusController
     }
 
     /**
-     * Saves the sorting order of tasks in the backend user's uc
-     *
-     * @param ServerRequestInterface $request
-     * @return ResponseInterface
-     */
-    public function saveSortingState(ServerRequestInterface $request): ResponseInterface
-    {
-        $sort = [];
-        $data = $request->getParsedBody()['data'] ?? $request->getQueryParams()['data'];
-
-        $items = explode('&', $data);
-        foreach ($items as $item) {
-            $sort[] = substr($item, 12);
-        }
-        $this->getBackendUserAuthentication()->uc['taskcenter']['sorting'] = serialize($sort);
-        $this->getBackendUserAuthentication()->writeUC();
-
-        return new JsonResponse(null);
-    }
-
-    /**
      * Returns BackendUserAuthentication
      *
      * @return BackendUserAuthentication
