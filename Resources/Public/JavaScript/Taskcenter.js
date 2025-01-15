@@ -1,31 +1,14 @@
-/*
- * This file is part of the TYPO3 CMS project.
- *
- * It is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, either version 2
- * of the License, or any later version.
- *
- * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
- *
- * The TYPO3 project - inspiring people to share!
- */
-
-/**
- * Module: TYPO3/CMS/Taskcenter/Taskcenter
- */
-define(['jquery',
-  'TYPO3/CMS/Backend/Icons',
-  'jquery-ui/sortable'
-], function($, Icons) {
-  'use strict';
-
+import $ from 'jquery';
+import DocumentService from '@typo3/core/document-service.js';
+import Icons from '@typo3/backend/icons.js';
+DocumentService.ready().then(() => {
   /**
    *
    * @type {{}}
    * @exports  TYPO3/CMS/Taskcenter/Taskcenter
    */
   var Taskcenter = {};
+
 
   /**
    *
@@ -36,7 +19,6 @@ define(['jquery',
     var $item = $(element);
     var $parent = $item.parent();
     var $icon = $parent.find('.t3js-taskcenter-header-collapse .t3js-icon');
-    var isCollapsed = isCollapsed;
     var iconName;
 
     if (isCollapsed) {
@@ -44,7 +26,7 @@ define(['jquery',
     } else {
       iconName = 'actions-view-list-collapse';
     }
-    Icons.getIcon(iconName, Icons.sizes.small, null, null, 'inline').done(function(icon) {
+    Icons.getIcon(iconName, Icons.sizes.small, null, null, 'inline').then(function(icon) {
       $icon.replaceWith(icon);
     });
 
@@ -59,26 +41,7 @@ define(['jquery',
     });
   };
 
-  /**
-   *
-   */
-  Taskcenter.initializeSorting = function() {
-    $('#task-list').sortable({
-      update: function(event, ui) {
-        $.ajax({
-          url: TYPO3.settings.ajaxUrls['taskcenter_sort'],
-          type: 'post',
-          cache: false,
-          data: {
-            'data': $(this).sortable('serialize', {
-              key: 'task-list[]',
-              expression: /[=_](.+)/
-            })
-          }
-        });
-      }
-    });
-  };
+
 
   /**
    * Register listeners
@@ -90,10 +53,10 @@ define(['jquery',
     $('.t3js-taskcenter-collapse').on('hide.bs.collapse', function() {
       Taskcenter.collapse($(this), 1);
     });
-    Taskcenter.initializeSorting();
   };
 
   $(Taskcenter.initializeEvents);
 
   return Taskcenter;
 });
+

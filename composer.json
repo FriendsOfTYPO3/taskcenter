@@ -18,7 +18,7 @@
 		"sort-packages": true
 	},
 	"require": {
-		"typo3/cms-core": "^11.5.23"
+		"typo3/cms-core": "^12.4.24"
 	},
 	"conflict": {
 		"typo3/cms": "*"

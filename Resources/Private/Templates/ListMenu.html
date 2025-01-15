@@ -6,7 +6,7 @@
 
 <f:if condition="{mainMenu}">
     <f:then>
-        <f:be.pageRenderer includeRequireJsModules="{0:'TYPO3/CMS/Taskcenter/Taskcenter'}" />
+        <f:be.pageRenderer includeJavaScriptModules="{0:'@friendsoftypo3/taskcenter/Taskcenter.js'}" />
         <ul id="task-list" class="list-unstyled">
             <f:for each="{items}" as="item" key="itemKey">
                 <f:render section="Item" arguments="{item: item, itemKey: itemKey}" />
@@ -27,24 +27,15 @@
     <li id="el_{item.uniqueKey}">
         <div id="{item.contentId}" data-taskcenter-id="{item.uniqueKey}" class="panel">
             <div class="panel-heading {item.panelState}">
-                <div class="panel-heading-right">
+                <div class="float-end">
                     <a href="#task_content_{item.contentId}" class="panel-header-collapse t3js-taskcenter-header-collapse" role="button" data-bs-toggle="collapse" data-uid="{item.contentId}" aria-expanded="{item.ariaExpanded}">
                         <core:icon identifier="{item.collapseIcon}" />
                     </a>
                 </div>
-                <div class="panel-heading-left">
+                <div class="float-start">
                     <a href="{item.link}" class="panel-title">
                         <f:if condition="{item.icon}">
-                            <span class="panel-title-icon">
-                                <f:if condition="{item.iconFile}">
-                                    <f:then>
-                                        <img src="{item.iconFile}" width="16" height="16" title="{item.title}" alt="{item.title}" />
-                                    </f:then>
-                                    <f:else>
-                                        {item.icon -> f:format.raw()}
-                                    </f:else>
-                                </f:if>
-                            </span>
+                            <core:icon identifier="{item.icon}" />
                         </f:if>
                         <span class="panel-title-name">
                             {item.title}
@@ -60,7 +51,7 @@
                             {item.descriptionHtml -> f:format.raw()}
                         </f:then>
                         <f:else>
-                            <p>
+                            <p>b
                                 {item.description -> f:format.nl2br()}
                             </p>
                         </f:else>
